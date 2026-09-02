@@ -8,7 +8,19 @@ import { Client } from '@/types/clients'
 const Data = defineStore('Data', {
   state: () => ({ 
     lastLoad: 0,
-    reloadItems: localStorage.getItem("reloadItems")?.split(',')?? <string[]>[],
+    reloadItems: localStorage.getItem("reloadItems")?.split(',') ?? [
+  "g-cpu",
+  "g-mem",
+  "g-dsk",
+  "g-swp",
+  "h-cpu",
+  "h-mem",
+  "h-net",
+  "hp-net",
+  "h-dio",
+  "i-sys",
+  "i-sbd"
+] as string[],
     subURI: "",
     os: "",
     enableTraffic: false,
