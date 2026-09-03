@@ -5,22 +5,62 @@ import { i18n } from '@/locales'
 import { Inbound } from '@/types/inbounds'
 import { Client } from '@/types/clients'
 
+// 定义所有可用的 Dashboard Tiles
+const AVAILABLE_TILES = [
+  "g-cpu",    // Gauge - CPU
+  "g-mem",    // Gauge - Memory
+  "g-dsk",    // Gauge - Disk
+  "g-swp",    // Gauge - Swap
+  "h-cpu",    // History/Chart - CPU
+  "h-mem",    // History/Chart - Memory
+  "h-net",    // History/Chart - Network
+  "hp-net",   // History/Chart - Per-Network
+  "h-dio",    // History/Chart - Disk IO
+  "i-sys",    // Info - System
+  "i-sbd"     // Info - Singbox
+] as const
+
+// 初始化 reloadItems 的辅助函数
+function initializeReloadItems(): string[] {
+  const savedItems = localStorage.getItem("reloadItems")
+  
+  // 如果 localStorage 中没有保存数据，返回所有 Tiles（11个全部开启）
+  if (!savedItems) {
+    return [...AVAILABLE_TILES]
+  }
+  
+  // 如果 localStorage 存在，解析并验证
+  try {
+    const items = savedItems.split(',').filter(item => item.trim() !== '')
+    
+    // 如果解析结果为空或无效，返回所有 Tiles
+    if (items.length === 0) {
+      localStorage.removeItem("reloadItems")
+      return [...AVAILABLE_TILES]
+    }
+    
+    // 过滤掉不在可用列表中的项（版本兼容性）
+    const validItems = items.filter(item => AVAILABLE_TILES.includes(item as any))
+    
+    // 如果有效项为空，返回所有 Tiles
+    if (validItems.length === 0) {
+      localStorage.removeItem("reloadItems")
+      return [...AVAILABLE_TILES]
+    }
+    
+    return validItems
+  } catch (error) {
+    // 发生错误时，清除 localStorage 并返回所有 Tiles
+    console.warn('Failed to parse reloadItems from localStorage:', error)
+    localStorage.removeItem("reloadItems")
+    return [...AVAILABLE_TILES]
+  }
+}
+
 const Data = defineStore('Data', {
   state: () => ({ 
     lastLoad: 0,
-    reloadItems: localStorage.getItem("reloadItems")?.split(',') ?? [
-  "g-cpu",
-  "g-mem",
-  "g-dsk",
-  "g-swp",
-  "h-cpu",
-  "h-mem",
-  "h-net",
-  "hp-net",
-  "h-dio",
-  "i-sys",
-  "i-sbd"
-] as string[],
+    reloadItems: initializeReloadItems(),
     subURI: "",
     os: "",
     enableTraffic: false,
